@@ -21,7 +21,7 @@ val_cola_ejecucion = 'default'
 configuracion = SparkConf().setAppName(val_nombre_proceso). \
         setAll(
         [('spark.speculation', 'false'), ('spark.master', 'yarn'), ('hive.exec.dynamic.partition.mode', 'nonstrict'),
-         ('spark.yarn.queue', val_cola_ejecucion), ('hive.exec.dynamic.partition', 'true')])
+        ('spark.yarn.queue', val_cola_ejecucion), ('hive.exec.dynamic.partition', 'true')])
         
 sc = SparkContext(conf=configuracion)
     sc.getConf().getAll()

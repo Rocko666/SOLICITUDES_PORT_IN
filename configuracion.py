@@ -6,7 +6,7 @@ val_cola_ejecucion = 'default'
 
 # Generales
 ##valor cambiado a TRUE para validaciones
-val_se_calcula = True
+val_se_calcula = False
 ##valor cambiado del prefijo, 
 val_prefijo_tabla = 'BIGD677'
 
