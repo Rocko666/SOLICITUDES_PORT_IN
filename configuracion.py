@@ -17,7 +17,7 @@ val_base_rdb_consultas = 'db_rdb'
 val_base_des_consultas = 'db_desarrollo2021'
 
 # Tablas Finales
-val_otc_t_360_ubicacion = 'otc_t_360_ubicacion'
+val_otc_t_solicitudes_port_in = 'otc_t_solicitudes_port_in'
 
 # Tablas Temporales
 val_otc_t_r_om_portin_co = 'otc_t_r_om_portin_co'
