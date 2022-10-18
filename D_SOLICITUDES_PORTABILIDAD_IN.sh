@@ -11,7 +11,7 @@
 ############################################################################
 ENTIDAD=D_SOLICITUDES_PORT_IN
 FECHAEJE=$1
-
+REPROCESO=$2
 VAL_RUTA_PROCESO=`mysql -N  <<<"select valor from params_des where ENTIDAD = '"$ENTIDAD"' AND parametro = 'VAL_RUTA_PROCESO';"`
 VAL_RUTA_APLICACION=`mysql -N  <<<"select valor from params_des where ENTIDAD = '"$ENTIDAD"' AND parametro = 'VAL_RUTA_APLICACION';"`
 VAL_NOMBRE_PROCESO=`mysql -N  <<<"select valor from params_des where ENTIDAD = '"$ENTIDAD"' AND parametro = 'VAL_NOMBRE_PROCESO';"`
@@ -21,7 +21,7 @@ VAL_NOMBRE_PROCESO_HIVE_QUERY='D_SOLICITUDES_PORT_IN'
 error=0
 
 # Validacion de parametros iniciales, nulos y existencia de Rutas
-  if [ -z "$ENTIDAD" ] || [ -z "'$FECHAEJE'" ] || [ -z "'$VAL_RUTA_PROCESO'" ] || [ -z "'$VAL_NOMBRE_PROCESO'" ] || [ -z "'$VAL_RUTA_APLICACION'" ] ; then
+  if [ -z "$ENTIDAD" ] || [ -z "$FECHAEJE" ] || [ -z "$VAL_RUTA_PROCESO" ] || [ -z "$VAL_NOMBRE_PROCESO" ] || [ -z "$VAL_RUTA_APLICACION" ] || [ -z "$REPROCESO" ] || [ -z "$VAL_NOMBRE_PROCESO_HIVE_QUERY" ] ; then
     echo " $TIME [ERROR] $rc unos de los parametros esta vacio o nulo"
     error=3
     exit $error
@@ -66,7 +66,25 @@ echo "==========================================================================
 
 
 $VAL_RUTA_APLICACION --master yarn --executor-memory 16G --num-executors 10 --executor-cores 2 --driver-memory 2G  $VAL_RUTA_PROCESO/$VAL_NOMBRE_PROCESO.py \
--fecha_ejecucion $FECHAEJE -nombre_proceso_pyspark $VAL_NOMBRE_PROCESO_HIVE_QUERY &> $VAL_LOG_EJECUCION_PYTHON
+-fecha_ejecucion $FECHAEJE -rps $REPROCESO -nombre_proceso_pyspark $VAL_NOMBRE_PROCESO_HIVE_QUERY &> $VAL_LOG_EJECUCION_PYTHON
 
+# Validamos el LOG de la ejecucion de Python, si encontramos errores finalizamos con error >0
+  VAL_ERRORES=`egrep 'FAILED:|Error|Table not found|Table already exists|Vertex' $VAL_LOG_EJECUCION_PYTHON | wc -l`
+  if [ $VAL_ERRORES -ne 0 ];then
+	error=4
+    echo "=== Error en la ejecucion del Sub-Proceso PYSPARK '$ENTIDAD' " >> $VAL_LOG_EJECUCION_PYTHON
+  else
+	error=0
+	echo " === ... FIN Sub-Proceso PYSPARK '$ENTIDAD'  ... === "`date '+%Y%m%d%H%M%S'` >> $VAL_LOG_EJECUCION_PYTHON		
+  fi
 
+  cat $VAL_LOG_EJECUCION_PYTHON >> $VAL_LOG_EJECUCION_PRINCIPAL
+  
+  echo " =============================================================================== " >> $VAL_LOG_EJECUCION_PRINCIPAL
+  echo " =============================================================================== " >> $VAL_LOG_EJECUCION_PRINCIPAL
+  echo " ==================== ... FINALIZA PROCESO '$ENTIDAD' ... ====================== "`date '+%Y%m%d%H%M%S'` >> $VAL_LOG_EJECUCION_PRINCIPAL
+  echo " =============================================================================== " >> $VAL_LOG_EJECUCION_PRINCIPAL
+  echo " =============================================================================== " >> $VAL_LOG_EJECUCION_PRINCIPAL
+
+exit $error
 # sh -x /home/nae108834/D_SOLICITUDES_PORT_IN/Bin/D_SOLICITUDES_PORT_IN.sh 20220731
